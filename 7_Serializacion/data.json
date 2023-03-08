@@ -1,0 +1,9 @@
+{
+  "llave": "valor",
+  "integer": 28,
+  "myArray": [ 1, 2, 3, 9999 ],
+  "myObject": {
+    "param1": 12,
+    "param2": 13
+  }
+}
