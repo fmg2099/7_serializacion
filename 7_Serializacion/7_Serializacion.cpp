@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <conio.h>
 #include <json/json.h>
 #include <curl/curl.h>
 
@@ -18,6 +19,23 @@ void writeHandler(void * data, size_t size, size_t nmemb, void* stream)
     ss >> res;
 
     std::cout << res["fact"] << "\n";
+}
+
+//Callback llamado al retornar la peticion de 1 a 10 factoides
+void factsHandler(void* data, size_t size, size_t nmemb, void* stream)
+{
+    std::cout << "factsHandler \n";
+    Json::Value res;
+    std::stringstream ss;
+    ss.write((const char*)data, nmemb);
+    ss >> res;
+    int n = res["to"].asInt();
+    std::cout << "to = " << n << "\n";
+    //imprimir los factoides en forma de lista
+    for (int i = 0; i < n; i++)
+    {
+        std::cout << res["data"][i]["fact"] << "\n";
+    }
 }
 
 int main()
@@ -63,18 +81,36 @@ int main()
         std::cout << "json no encontrado\n";
     }
 
-    //prueba de acceso a api web
-    std::cout << "cUrl version " << curl_version() << "\n";
-    CURL* curlobj = curl_easy_init();
-    if (curlobj)
+    std::cout << "¿Cuantos datos de gatos deseas? (1 a 10)" << std::endl;
+    int n = 0;
+    std::cin >> n;
+
+    std::cout << "ingresado: " << n << "\n";
+    if (n > 0 && n <= 10)
     {
-        curl_easy_setopt(curlobj, CURLOPT_URL, "https://catfact.ninja/fact");
-        curl_easy_setopt(curlobj, CURLOPT_WRITEFUNCTION, writeHandler );
-        curl_easy_perform(curlobj);
-        curl_easy_cleanup(curlobj);
+        CURL* curlobj = curl_easy_init();
+        if (curlobj)
+        {
+            if (n == 1)
+            {
+                curl_easy_setopt(curlobj, CURLOPT_URL, "https://catfact.ninja/fact");
+            }
+            else
+            {
+                std::string url = std::string("https://catfact.ninja/facts?limit=");
+                url += std::to_string(n);
+                curl_easy_setopt(curlobj, CURLOPT_URL, url.c_str() );
+            }
+            
+            curl_easy_setopt(curlobj, CURLOPT_WRITEFUNCTION, factsHandler);
+            curl_easy_perform(curlobj);
+            curl_easy_cleanup(curlobj);
+        }
     }
-    
-    
+    else
+    {
+        std::cout << "numero incorrecto" << "\n";
+    }
 
     return 0;
 
